@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+        }
+
+        canvas {
+            box-sizing: border-box;
+            border:1px solid black;
+            margin: 10px;
+            max-width: 100vw;
+            max-height: 100vh;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="c"></canvas>
+
+    <div class="controls">
+        <input type="color">
+        <input type="number" id="num">
+        <button>clear</button>
+        <button id="downloadBtn">download</button>
+    </div>
+
+    <script>
+        let canvas = c;
+        let ctx = canvas.getContext('2d');
+        let cords = [];
+        let strokeColor = 'black';
+        let borderWidth = 4;
+
+        // size
+        canvas.height = window.innerHeight-40;
+        canvas.width = window.innerWidth-25;
+
+        canvas.onmousedown = canvas.ontouchstart = (e) => {
+
+            canvas.onmousemove = canvas.ontouchmove = (e) => {
+
+                if ('ontouchstart' in window) cords.push({"x": Math.floor(e.touches[0].clientX), "y": Math.floor(e.touches[0].clientY)});
+                else cords.push({"x": e.clientX, "y": e.clientY});
+
+                ctx.beginPath();
+                try {
+                    ctx.moveTo(cords[cords.length-5].x,cords[cords.length-5].y);
+                } catch(e){}
+                ctx.lineTo(cords[cords.length-1].x, cords[cords.length-1].y)
+                ctx.strokeStyle = strokeColor;
+                ctx.lineWidth = borderWidth;
+                ctx.stroke()
+            }
+        }
+
+        canvas.onmouseup = canvas.ontouchend = () => {
+            cords = []
+            canvas.onmousemove = null;
+        }
+
+        canvas.onmouseleave = () => cords = []
+
+        document.querySelector('button').onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height)
+
+        document.querySelector('input').onchange = function() {
+            strokeColor = this.value;
+        }
+
+        document.querySelector('#num').onchange = function() {
+            borderWidth = this.value;
+        }
+
+        // download
+        document.querySelector('#downloadBtn').onclick = () => {
+            let imageData = canvas.toDataURL();
+            let image = new Image();
+            image.src = imageData;
+
+            let link = document.createElement("a");
+
+            link.setAttribute("href", image.src);
+            link.setAttribute("download", "canvasImage");
+            link.click();
+        }
+
+    </script>
+</body>
+</html>
